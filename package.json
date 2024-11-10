@@ -5,6 +5,7 @@
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
   "jsdelivr": "./lib/nutjar.js",
+  "types": "./lib/types/index.d.ts",
   "scripts": {
     "dev": "vite",
     "build": "tsc && node build.js",
