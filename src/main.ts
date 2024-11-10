@@ -1,9 +1,11 @@
 import { CashuMint, CashuWallet } from "@cashu/cashu-ts";
 import {
+  Event,
   EventTemplate,
   finalizeEvent,
   generateSecretKey,
   nip19,
+  SimplePool,
 } from "nostr-tools";
 
 type TipCallbacks = {
@@ -16,11 +18,13 @@ export class Nutjar {
   private readonly pubkey: string;
   private readonly relays: string[];
   private readonly wallet: CashuWallet;
+  private readonly pool: SimplePool;
 
   constructor(mintUrl: string, npub: `npub1${string}`, relays: string[]) {
     this.pubkey = nip19.decode(npub).data;
     this.relays = relays;
     this.wallet = new CashuWallet(new CashuMint(mintUrl));
+    this.pool = new SimplePool();
   }
 
   async tip(amountInSats: number, memo?: string, cb?: TipCallbacks) {
@@ -54,11 +58,25 @@ export class Nutjar {
       };
       const randomSk = generateSecretKey();
       const event = finalizeEvent(eventTemplate, randomSk);
-      console.log(event);
+      const res = await Promise.allSettled(this.publishEvent(event));
+      console.log(res);
     } catch (e) {
       if (e instanceof Error && cb?.onError) {
         cb.onError(e);
       }
     }
+  }
+
+  publishEvent(e: Event, timeout?: number) {
+    return this.pool.publish(this.relays, e).map((promise) =>
+      Promise.race([
+        promise,
+        new Promise((_, rej) => {
+          setTimeout(() => {
+            rej("Timeout exceeded");
+          }, timeout || 3500);
+        }),
+      ]),
+    );
   }
 }
