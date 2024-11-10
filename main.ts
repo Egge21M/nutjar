@@ -1,4 +1,4 @@
-import { Nutjar } from "./src/main";
+import { Nutjar } from "./src";
 
 const jar = new Nutjar(
   "https://testnut.cashu.space",
