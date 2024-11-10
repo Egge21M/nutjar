@@ -10,7 +10,7 @@ import {
 
 type TipCallbacks = {
   onInvoice?: (paymentRequest: string) => void;
-  onSuccess?: () => void;
+  onSuccess?: (e: Event) => void;
   onError?: (error: Error) => void;
 };
 
@@ -59,7 +59,12 @@ export class Nutjar {
       const randomSk = generateSecretKey();
       const event = finalizeEvent(eventTemplate, randomSk);
       const res = await Promise.allSettled(this.publishEvent(event));
-      console.log(res);
+      if (!res.some((p) => p.status === "fulfilled")) {
+        throw new Error("Publishing failed...");
+      }
+      if (cb?.onSuccess) {
+        cb.onSuccess(event);
+      }
     } catch (e) {
       if (e instanceof Error && cb?.onError) {
         cb.onError(e);
