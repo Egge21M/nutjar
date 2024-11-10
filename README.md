@@ -1,6 +1,6 @@
-# nutjar
+# nutjar.js
 
-The easiest way to receive permissionless Lightning donations on a website
+The easiest way to receive permissionless Lightning donations on a website!
 
 ## Usage
 

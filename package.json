@@ -1,5 +1,5 @@
 {
-  "name": "nutjar",
+  "name": "nutjar.js",
   "version": "0.1.0",
   "type": "module",
   "main": "./lib/cjs/index.js",
