@@ -1,6 +1,6 @@
 {
   "name": "nutjar.js",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
