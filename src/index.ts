@@ -1,6 +1,10 @@
 import { CashuMint, CashuWallet } from "@cashu/cashu-ts";
 import { nip19 } from "nostr-tools";
 import { TipCallbacks, Transport } from "./types";
+import { Nip17Transport } from "./transports/Nip17Transport";
+import { NutZapTransport } from "./transports/NutZapTransport";
+
+export { NutZapTransport, Nip17Transport };
 
 export class Nutjar {
   protected readonly pubkey: string;
