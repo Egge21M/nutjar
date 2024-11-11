@@ -1,9 +1,9 @@
-import { Nutjar } from "./src";
+import { Nutjar, NutZapTransport } from "./src";
 
 const jar = new Nutjar(
   "https://testnut.cashu.space",
   "npub1mhcr4j594hsrnen594d7700n2t03n8gdx83zhxzculk6sh9nhwlq7uc226",
-  ["wss://relay.damus.io"],
+  new NutZapTransport(["wss://relay.damus.io"]),
 );
 
 jar.tip(21, "Test tip!", {

@@ -1,40 +1,42 @@
 import { CashuMint, CashuWallet } from "@cashu/cashu-ts";
-import {
-  Event,
-  EventTemplate,
-  finalizeEvent,
-  generateSecretKey,
-  nip19,
-  SimplePool,
-} from "nostr-tools";
-
-type TipCallbacks = {
-  onInvoice?: (paymentRequest: string) => void;
-  onSuccess?: (e: Event) => void;
-  onError?: (error: Error) => void;
-};
+import { nip19 } from "nostr-tools";
+import { TipCallbacks, Transport } from "./types";
 
 export class Nutjar {
-  private readonly pubkey: string;
-  private readonly relays: string[];
-  private readonly wallet: CashuWallet;
-  private readonly pool: SimplePool;
+  protected readonly pubkey: string;
+  protected readonly wallet: CashuWallet;
+  private readonly verbose: boolean = false;
+  private readonly transport: Transport;
 
-  constructor(mintUrl: string, npub: `npub1${string}`, relays: string[]) {
+  constructor(
+    mintUrl: string,
+    npub: `npub1${string}`,
+    transport: Transport,
+    opts?: { verbose?: boolean },
+  ) {
     this.pubkey = nip19.decode(npub).data;
-    this.relays = relays;
     this.wallet = new CashuWallet(new CashuMint(mintUrl));
-    this.pool = new SimplePool();
+    this.transport = transport;
+    if (opts?.verbose) {
+      this.verbose = true;
+    }
   }
 
   async tip(amountInSats: number, memo?: string, cb?: TipCallbacks) {
+    this.log("getting quote for ", amountInSats, " SATS");
     try {
       const { quote, request } =
         await this.wallet.createMintQuote(amountInSats);
-      if (cb?.onInvoice) cb.onInvoice(request);
+      this.log("received quote: ", quote);
+      if (cb?.onInvoice) {
+        this.log("called onInvoice callback");
+        cb.onInvoice(request);
+      }
       while (true) {
+        this.log("checking quote's state");
         const { state } = await this.wallet.checkMintQuote(quote);
         if (state === "PAID") {
+          this.log("quote is paid");
           break;
         }
         await new Promise((res) => {
@@ -44,26 +46,14 @@ export class Nutjar {
       const { proofs } = await this.wallet.mintProofs(amountInSats, quote, {
         pubkey: "02" + this.pubkey,
       });
-      const eventTemplate: EventTemplate = {
-        kind: 9321,
-        content: memo || "",
-        created_at: Math.floor(Date.now() / 1000),
-        tags: [
-          ["amount", String(amountInSats)],
-          ["unit", "sat"],
-          ["proof", JSON.stringify(proofs)],
-          ["u", this.wallet.mint.mintUrl],
-          ["p", this.pubkey],
-        ],
-      };
-      const randomSk = generateSecretKey();
-      const event = finalizeEvent(eventTemplate, randomSk);
-      const res = await Promise.allSettled(this.publishEvent(event));
-      if (!res.some((p) => p.status === "fulfilled")) {
-        throw new Error("Publishing failed...");
-      }
+      await this.transport.send(
+        proofs,
+        this.wallet.mint.mintUrl,
+        this.pubkey,
+        memo,
+      );
       if (cb?.onSuccess) {
-        cb.onSuccess(event);
+        cb.onSuccess();
       }
     } catch (e) {
       if (e instanceof Error && cb?.onError) {
@@ -72,16 +62,9 @@ export class Nutjar {
     }
   }
 
-  publishEvent(e: Event, timeout?: number) {
-    return this.pool.publish(this.relays, e).map((promise) =>
-      Promise.race([
-        promise,
-        new Promise((_, rej) => {
-          setTimeout(() => {
-            rej("Timeout exceeded");
-          }, timeout || 3500);
-        }),
-      ]),
-    );
+  log(...data: any[]) {
+    if (this.verbose) {
+      console.log(data);
+    }
   }
 }
