@@ -3,6 +3,7 @@ import esbuild from "esbuild";
 let common = {
   entryPoints: ["./src/index.ts"],
   sourcemap: "external",
+  bundle: true,
 };
 
 esbuild
@@ -10,6 +11,7 @@ esbuild
     ...common,
     outdir: "lib/esm",
     format: "esm",
+    packages: "external",
   })
   .then(() => console.log("esm build success."));
 
@@ -18,6 +20,7 @@ esbuild
     ...common,
     outdir: "lib/cjs",
     format: "cjs",
+    packages: "external",
   })
   .then(() => {
     console.log("cjs build success.");
@@ -30,7 +33,6 @@ esbuild
     format: "iife",
     globalName: "nutjar",
     minify: false,
-    bundle: true,
   })
   .then(() => console.log("standalone build success."));
 
@@ -41,6 +43,5 @@ esbuild
     format: "iife",
     globalName: "nutjar",
     minify: true,
-    bundle: true,
   })
   .then(() => console.log("minified standalone build success."));
