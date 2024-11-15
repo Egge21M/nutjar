@@ -5,6 +5,10 @@
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
   "jsdelivr": "./lib/nutjar.js",
+  "funding": {
+    "type": "nostr",
+    "url": "https://nprofile1qqsdmup6e2z6mcpeue6z6kl08he49hcen5xnrc3tnpvw0mdgtjemh0suxa0kj"
+  },
   "types": "./lib/types/index.d.ts",
   "scripts": {
     "dev": "vite",
