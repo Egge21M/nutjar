@@ -7,17 +7,18 @@ import { getEncodedToken } from "@cashu/cashu-ts/dist/lib/es5/utils";
 export class Nip17Transport implements Transport {
   private readonly pool: SimplePool;
   private readonly relays: string[];
-  // private readonly verbose?: boolean;
+  private readonly verbose?: boolean;
 
-  constructor(relays: string[]) {
+  constructor(relays: string[], opts?: { verbose: boolean }) {
     this.pool = new SimplePool();
     this.relays = relays;
-    // if (verbose) {
-    // this.verbose = true;
-    // }
+    if (opts?.verbose) {
+      this.verbose = true;
+    }
   }
 
   async send(proofs: Proof[], mintUrl: string, pubkey: string, memo?: string) {
+    this.log("Sending proofs to target");
     const encodedToken = getEncodedToken({ proofs, mint: mintUrl, memo });
     const randomSk = generateSecretKey();
     const wrap = nip17.wrapEvent(
@@ -25,14 +26,14 @@ export class Nip17Transport implements Transport {
       { publicKey: pubkey },
       JSON.stringify(encodedToken),
     );
-    console.log(wrap);
     const res = await Promise.allSettled(this.publishEvent(wrap));
-    console.log(res);
+    this.log(res);
     if (!res.some((p) => p.status === "fulfilled")) {
       throw new Error("Publishing failed...");
     }
   }
   publishEvent(e: Event, timeout?: number) {
+    this.log("Publishing event... ", e);
     return this.pool.publish(this.relays, e).map((promise) =>
       Promise.race([
         promise,
@@ -43,5 +44,10 @@ export class Nip17Transport implements Transport {
         }),
       ]),
     );
+  }
+  log(...data: any[]) {
+    if (this.verbose) {
+      console.log(data);
+    }
   }
 }
