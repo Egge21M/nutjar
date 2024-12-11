@@ -1,6 +1,6 @@
 {
   "name": "nutjar.js",
-  "version": "0.2.7",
+  "version": "0.3.0",
   "type": "module",
   "main": "./lib/nutjar.cjs.js",
   "module": "./lib/nutjar.es.js",
