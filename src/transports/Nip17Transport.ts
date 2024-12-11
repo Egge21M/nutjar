@@ -1,8 +1,7 @@
 import { Event, generateSecretKey, SimplePool } from "nostr-tools";
 import * as nip17 from "nostr-tools/nip17";
 import { Transport } from "../types";
-import { Proof } from "@cashu/cashu-ts";
-import { getEncodedToken } from "@cashu/cashu-ts/dist/lib/es5/utils";
+import { Proof, getEncodedToken } from "@cashu/cashu-ts";
 
 export class Nip17Transport implements Transport {
   private readonly pool: SimplePool;

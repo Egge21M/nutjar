@@ -45,7 +45,7 @@ export class Nutjar {
           setTimeout(res, 5000);
         });
       }
-      const { proofs } = await this.wallet.mintProofs(amountInSats, quote, {
+      const proofs = await this.wallet.mintProofs(amountInSats, quote, {
         pubkey: "02" + this.pubkey,
       });
       await this.transport.send(
